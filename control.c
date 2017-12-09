@@ -18,12 +18,39 @@ union semun {
             (Linux-specific) */
 };
 
+void print_poem(){
+  int child = fork();
+  if (!child){
+    if (execlp("cat", "cat", "poem.txt", NULL) < 0){
+      printf("poem doesn't exist yet\n");
+    }
+  }
+  else{
+    int status;
+    wait(&status);
+  }
+}
+
+void delete_poem(){
+  int child = fork();
+  if (!child){
+    if (execlp("rm", "rm", "poem.txt", NULL) < 0){
+      printf("poem doesn't exist yet\n");
+    }
+  }
+  else{
+    int status;
+    wait(&status);
+  }
+}
+
 int main(int argc, char *argv[]){
-  int KEY = ftok("control.c", 11); // creating a key for the .gitignore file 
+  int KEY = ftok("control.c", 115); // creating a key for the .gitignore file 
   int MEMKEY = ftok("main.c", 22);
   int semDes;
   int memDes;
   int* pointer;
+  struct sembuf OPERATION;
   int fd;
   
   // creating shared memory and semaphore and all that shenanigan 
@@ -60,7 +87,7 @@ int main(int argc, char *argv[]){
     }
 
     if ( (fd = open("poem.txt", O_CREAT | O_TRUNC | O_EXCL | O_RDWR, 0777)) < 0){
-      printf("failed to create file; %s\n", strerror(errno));
+      printf("no biggie -- poem already exists\n");
       exit(0);
     }
     close(fd);
@@ -68,10 +95,7 @@ int main(int argc, char *argv[]){
 
   // viewing by executing cat on the text file
   else if (!strncmp(argv[1], "-v", 2)){
-    if (execlp("cat", "cat", "poem.txt", NULL) < 0){
-      printf("poem doesn't exist yet\n");
-      exit(0);
-    }
+    print_poem();
   }
 
   // removing shared memory and semaphore
@@ -81,15 +105,26 @@ int main(int argc, char *argv[]){
       printf("failed to get semaphore descriptor; %s\n", strerror(errno));
       exit(0);
     }
-
-    if (semctl(semDes, 0, IPC_RMID) < 0){//errno
-      printf("failed to remove semaphore %d\n", KEY);
-      exit(0);
-    }
     
     memDes = shmget(MEMKEY, sizeof(int), 0644);
     if (memDes < 0){
       printf("failed to get shared memory descriptor; %s\n", strerror(errno));
+      exit(0);
+    }
+
+    OPERATION.sem_num = 0;
+    OPERATION.sem_flg = SEM_UNDO;//in case I fk up
+    OPERATION.sem_op = -1; //blocking
+    if (semop(semDes, &OPERATION, 1) < 0){
+      printf("failed to access poem resource");
+      return 0;
+    }
+
+    print_poem();
+    delete_poem();
+
+    if (semctl(semDes, 0, IPC_RMID) < 0){//errno
+      printf("failed to remove semaphore %d\n", KEY);
       exit(0);
     }
 

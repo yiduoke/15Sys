@@ -11,7 +11,7 @@
 #include <errno.h>
 
 int main(){
-    int KEY = ftok("control.c", 11);
+    int KEY = ftok("control.c", 115);
     int MEMKEY = ftok("main.c", 22);
     int semDes;
     int memDes;
