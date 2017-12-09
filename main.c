@@ -11,8 +11,8 @@
 #include <errno.h>
 
 int main(){
-    int KEY = ftok("control.c", 1);
-    int MEMKEY = ftok("main.c", 2);
+    int KEY = ftok("control.c", 11);
+    int MEMKEY = ftok("main.c", 22);
     int semDes;
     int memDes;
     int* pointer;
@@ -22,7 +22,7 @@ int main(){
 
     semDes = semget(KEY, 1, 0777);
     if (semDes < 0 ){
-        printf("failed to get to the semaphore\n");
+        printf("failed to get to the semaphore; %s\n", strerror(errno));
         return 0;
     }
 
@@ -34,9 +34,9 @@ int main(){
         return 0;
     }
 
-    memDes = shmget(KEY, sizeof(int), 0644);
+    memDes = shmget(MEMKEY, sizeof(int), 0644);
     if (memDes < 0){
-        printf("failed to access shared memory\n");
+        printf("failed to access shared memory; %s\n", strerror(errno));
         return 0;
     }
 

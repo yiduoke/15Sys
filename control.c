@@ -19,8 +19,8 @@ union semun {
 };
 
 int main(int argc, char *argv[]){
-  int KEY = ftok("makefile", 1); // creating a key for the .gitignore file 
-  int MEMKEY = ftok("main.c", 2);
+  int KEY = ftok("control.c", 11); // creating a key for the .gitignore file 
+  int MEMKEY = ftok("main.c", 22);
   int semDes;
   int memDes;
   int* pointer;
