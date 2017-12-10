@@ -20,6 +20,8 @@ int main(){
     struct sembuf OPERATION;
     int fd;
 
+    printf("checking to see if resources are available...\n");
+    
     semDes = semget(KEY, 1, 0777);
     if (semDes < 0 ){
         printf("failed to get to the semaphore; %s\n", strerror(errno));
@@ -51,6 +53,8 @@ int main(){
         printf("failed to open poem\n");
         return 0;
     }
+
+    printf("HARK! They are!\n")
 
     // reading and printing last line
     lseek(fd, -1 * *pointer, SEEK_END);
